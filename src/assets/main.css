@@ -1,0 +1,38 @@
+@import 'tailwindcss';
+
+/* CSS */
+:root {
+    font-family: Inter, sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+}
+
+@supports (font-variation-settings: normal) {
+    :root {
+        font-family: InterVariable, sans-serif;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+}
+
+::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 0; /* no rounded corners */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #000000;
+    border-radius: 0; /* no rounded corners */
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+}
+
+* {
+    scrollbar-color: #000000 #ffffff;
+}
