@@ -18,7 +18,7 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: oklch(86.9% 0.005 56.366);
     border-radius: 0; /* no rounded corners */
 }
 
@@ -34,5 +34,5 @@
 }
 
 * {
-    scrollbar-color: #000000 #ffffff;
+    scrollbar-color: #000000 oklch(86.9% 0.005 56.366);
 }

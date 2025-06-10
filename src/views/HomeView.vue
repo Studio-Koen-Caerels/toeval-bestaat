@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import Dice from '@/components/Dice.vue'
 
 const numberOfAttempts = ref(0)
 const dice_1 = ref(0)
@@ -19,9 +20,8 @@ const toevalBestaat = ref(false)
 
 const colors = ['red', 'green', 'blue', 'cyan', 'yellow', 'magenta']
 const toeval = ['T', 'O', 'E', 'V', 'A', 'L']
-const hasDelay = false
-const delay = 10
-
+const hasDelay = true
+const delay = 1
 
 function initCalculation() {
   result.value = {}
@@ -104,12 +104,17 @@ async function startCalculation() {
       toevalBestaat.value = true
     }
 
+    const totalDice =
+      dice_1.value + dice_2.value + dice_3.value + dice_4.value + dice_5.value + dice_6.value
+    const colorIndex = totalDice % colors.length
+
     if (result.value[resultString] === undefined) {
       result.value[resultString] = {
         string: resultString,
         hasUniqueDice: hasUniqueDice,
         toevalBestaat: toevalBestaat.value,
         numberOfResults: 0,
+        color: colors[colorIndex],
       }
     } else {
       result.value[resultString].numberOfResults++
@@ -129,61 +134,82 @@ function rollDice() {
         <div id="dice" class="w-[80px] bg-black border-r-2 border-black text-center font-bold">
           <div
             id="dice_1"
-            class="p-4 border-b-2 border-black"
+            class="border-b-2 border-black"
             :style="`background-color:${colors[dice_1]}`"
           >
-            <div class="text-3xl">{{ dice_1 + 1 }}</div>
+            <Dice :dice="dice_1 + 1" />
           </div>
           <div
             id="dice_2"
-            class="p-4 text-3xl border-b-2 border-black"
+            class="border-b-2 border-black"
             :style="`background-color:${colors[dice_2]}`"
           >
-            {{ dice_2 + 1 }}
+            <Dice :dice="dice_2 + 1" />
           </div>
           <div
             id="dice_3"
-            class="p-4 text-3xl border-b-2 border-black"
+            class="border-b-2 border-black"
             :style="`background-color:${colors[dice_3]}`"
           >
-            {{ dice_3 + 1 }}
+            <Dice :dice="dice_3 + 1" />
           </div>
           <div
             id="dice_4"
-            class="p-4 text-3xl border-b-2 border-black"
+            class="border-b-2 border-black"
             :style="`background-color:${colors[dice_4]}`"
           >
-            {{ dice_4 + 1 }}
+            <Dice :dice="dice_4 + 1" />
           </div>
           <div
             id="dice_5"
-            class="p-4 text-3xl border-b-2 border-black"
+            class="border-b-2 border-black"
             :style="`background-color:${colors[dice_5]}`"
           >
-            {{ dice_5 + 1 }}
+            <Dice :dice="dice_5 + 1" />
           </div>
           <div
             id="dice_6"
-            class="p-4 text-3xl border-b-2 border-black"
+            class="border-b-2 border-black"
             :style="`background-color:${colors[dice_6]}`"
           >
-            {{ dice_6 + 1 }}
+            <Dice :dice="dice_6 + 1" />
           </div>
         </div>
-        <div id="rendering" class="overflow-x-auto overflow-y-none w-full">
-          <div class="grid grid-flow-col grid-rows-48 ml-4 mt-2">
-            <div v-for="(item, key) in result" :key="key" class="w-[85px] h-[18px] text-blue-700">
-              <div class="text-xs">
+
+        <!-- // render canvas -->
+
+        <div id="rendering" class="overflow-x-auto overflow-y-none w-full flex bg-neutral-300">
+          <div class="grid grid-flow-col grid-rows-48 m-6 border-l-2 border-t-[1px] border-neutral-400">
+            <div
+              v-for="(item, key) in result"
+              :key="key"
+              class="w-[100px] h-full text-blue-700 border-r-[2px] border-b-[1px] border-neutral-400"
+            >
+              <div class="text-xs h-full">
                 <div
                   v-if="item.toevalBestaat"
-                  class="text-green-500 underline underline-offset-2 decoration-black"
+                  class="text-green-500 border-b-[1px] border-black"
                 >
-                  {{ item.string }}
+                  <div
+                    v-for="(char, index) in item.string"
+                    :key="index"
+                    :style="'color:' + item.color"
+                    class="border-r-[1px] border-neutral-400 px-0.5 h-full"
+                  >
+                    {{ char }}
+                  </div>
                 </div>
                 <div v-else class="">
-                  <div v-if="item.hasUniqueDice" class="flex gap-2">
-                    <div class="underline underline-offset-2 decoration-black">
-                      {{ item.string }}
+                  <div v-if="item.hasUniqueDice" class="flex gap-2 h-full">
+                    <div class="border-b-[1px] border-black flex">
+                      <div
+                        v-for="(char, index) in item.string"
+                        :key="index"
+                        :style="'color:' + item.color"
+                        class="border-r-[1px] border-neutral-400 px-0.5 h-full"
+                      >
+                        {{ char }}
+                      </div>
                     </div>
                     <div
                       class="rounded-full bg-red-500 text-white px-1.5"
@@ -192,8 +218,17 @@ function rollDice() {
                       {{ item.numberOfResults }}
                     </div>
                   </div>
-                  <div v-else class="flex gap-2">
-                    <div class="">{{ item.string }}</div>
+                  <div v-else class="flex gap-2 h-full">
+                    <div class="flex">
+                      <div
+                        v-for="(char, index) in item.string"
+                        :key="index"
+                        :style="'color:' + item.color"
+                        class="border-r-[1px] border-neutral-400 px-0.5 h-full"
+                      >
+                        {{ char }}
+                      </div>
+                    </div>
                     <div
                       class="rounded-full bg-red-500 text-white px-1.5"
                       v-if="item.numberOfResults >= 2"
@@ -205,6 +240,7 @@ function rollDice() {
               </div>
             </div>
           </div>
+          <div class="grow">&nbsp;</div>
         </div>
       </div>
     </main>
