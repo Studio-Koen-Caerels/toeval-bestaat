@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import Dice from '@/components/Dice.vue'
+import moment from '@/utils/moment-setup'
 
 const numberOfAttempts = ref(0)
 const dice_1 = ref(0)
@@ -16,12 +17,22 @@ const dice_4_text = ref('')
 const dice_5_text = ref('')
 const dice_6_text = ref('')
 const result = ref({})
-const toevalBestaat = ref(false)
 
 const colors = ['red', 'green', 'blue', 'cyan', 'yellow', 'magenta']
 const toeval = ['T', 'O', 'E', 'V', 'A', 'L']
-const hasDelay = true
+const hasDelay = false
 const delay = 1
+
+// samenvatting van de zoektocht
+
+const toevalBestaat = ref(false)
+const startAt = ref(moment())
+const endAt = ref(moment())
+const duration = ref()
+
+const startLabel = ref('')
+const endLabel = ref('')
+const durationLabel = ref('')
 
 function initCalculation() {
   result.value = {}
@@ -36,6 +47,14 @@ function initCalculation() {
 }
 
 async function startCalculation() {
+  startAt.value = moment()
+  startLabel.value =
+    startAt.value.format('ddd') +
+    ' ' +
+    startAt.value.format('ll') +
+    ' ' +
+    startAt.value.format('LTS')
+
   while (!toevalBestaat.value) {
     numberOfAttempts.value++
     let resultString = ''
@@ -52,7 +71,6 @@ async function startCalculation() {
     if (hasDelay) {
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
-
     dice_2.value = rollDice()
     dice_2_text.value = toeval[dice_2.value]
     resultString += dice_2_text.value
@@ -101,8 +119,24 @@ async function startCalculation() {
     const hasUniqueDice = uniqueDice.size === 6
 
     if (resultString === 'TOEVAL') {
+      endAt.value = moment()
+      duration.value = moment.duration(endAt.value.diff(startAt.value))
+      endLabel.value =
+        endAt.value.format('ddd') + ' ' + endAt.value.format('ll') + ' ' + endAt.value.format('LTS')
+
+      const h = String(duration.value.hours()).padStart(2, '0')
+      const m = String(duration.value.minutes()).padStart(2, '0')
+      const s = String(duration.value.seconds()).padStart(2, '0')
+      durationLabel.value = `${h}u. ${m}m. ${s}s.`
+
+      // --------------------------------------------------------------------------
+      // TOEVAL bestaat
+      // --------------------------------------------------------------------------
+
       toevalBestaat.value = true
     }
+
+    // -- render reporting
 
     const totalDice =
       dice_1.value + dice_2.value + dice_3.value + dice_4.value + dice_5.value + dice_6.value
@@ -118,6 +152,10 @@ async function startCalculation() {
       }
     } else {
       result.value[resultString].numberOfResults++
+    }
+
+    if (!hasDelay) {
+      // await new Promise((resolve) => setTimeout(resolve, 1))
     }
   }
 }
@@ -179,28 +217,29 @@ function rollDice() {
         <!-- // render canvas -->
 
         <div id="rendering" class="overflow-x-auto overflow-y-none w-full flex bg-neutral-300">
-          <div class="grid grid-flow-col grid-rows-48 m-6 border-l-2 border-t-[1px] border-neutral-400">
+          <div
+            class="grid grid-flow-col grid-rows-48 m-6 border-l-2 border-t-[1px] border-neutral-400"
+          >
             <div
               v-for="(item, key) in result"
               :key="key"
-              class="w-[100px] h-full text-blue-700 border-r-[2px] border-b-[1px] border-neutral-400"
+              class="w-[100px] h-full border-r-[2px] border-b-[1px] border-neutral-400"
             >
               <div class="text-xs h-full">
-                <div
-                  v-if="item.toevalBestaat"
-                  class="text-green-500 border-b-[1px] border-black"
-                >
-                  <div
-                    v-for="(char, index) in item.string"
-                    :key="index"
-                    :style="'color:' + item.color"
-                    class="border-r-[1px] border-neutral-400 px-0.5 h-full"
-                  >
-                    {{ char }}
+                <div v-if="item.toevalBestaat" class="flex">
+                  <div class="border-b-[1px] border-black flex text-black bg-white">
+                    <div
+                      v-for="(char, index) in item.string"
+                      :key="index"
+                      class="border-r-[1px] border-neutral-400 px-0.5 h-full text-black"
+                    >
+                      {{ char }}
+                    </div>
                   </div>
+                  <div class="grow">&nbsp;</div>
                 </div>
                 <div v-else class="">
-                  <div v-if="item.hasUniqueDice" class="flex gap-2 h-full">
+                  <div v-if="item.hasUniqueDice" class="flex h-full">
                     <div class="border-b-[1px] border-black flex">
                       <div
                         v-for="(char, index) in item.string"
@@ -212,13 +251,13 @@ function rollDice() {
                       </div>
                     </div>
                     <div
-                      class="rounded-full bg-red-500 text-white px-1.5"
+                      class="rounded-full bg-red-500 text-white px-1 ml-0.5"
                       v-if="item.numberOfResults >= 2"
                     >
                       {{ item.numberOfResults }}
                     </div>
                   </div>
-                  <div v-else class="flex gap-2 h-full">
+                  <div v-else class="flex h-full">
                     <div class="flex">
                       <div
                         v-for="(char, index) in item.string"
@@ -230,7 +269,7 @@ function rollDice() {
                       </div>
                     </div>
                     <div
-                      class="rounded-full bg-red-500 text-white px-1.5"
+                      class="rounded-full bg-red-500 text-white px-1 ml-0.5"
                       v-if="item.numberOfResults >= 2"
                     >
                       {{ item.numberOfResults }}
@@ -244,10 +283,16 @@ function rollDice() {
         </div>
       </div>
     </main>
+
     <!-- footer -->
     <footer>
       <div id="footer" class="flex bg-black text-white">
-        <div class="p-3">{{ numberOfAttempts }} pogingen</div>
+        <div class="p-3 w-48">{{ numberOfAttempts }} pogingen</div>
+        <div class="p-3 flex gap-1">
+          <div>gestart op {{ startLabel }}</div>
+          <div v-if="toevalBestaat">en beëindigd op {{ endLabel }}</div>
+          <div v-if="toevalBestaat">(duur {{ durationLabel }})</div>
+        </div>
         <div class="grow"></div>
         <div class="p-3" @click="initCalculation">Toeval bestaat</div>
       </div>
