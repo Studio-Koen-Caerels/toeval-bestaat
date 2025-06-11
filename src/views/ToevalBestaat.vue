@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Dice from '@/components/Dice.vue'
 import moment from '@/utils/moment-setup'
 
@@ -33,6 +33,10 @@ const duration = ref()
 const startLabel = ref('')
 const endLabel = ref('')
 const durationLabel = ref('')
+
+onMounted(() => {
+  initCalculation()
+})
 
 function initCalculation() {
   result.value = {}
